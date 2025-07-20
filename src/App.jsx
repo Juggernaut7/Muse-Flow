@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import Navbar from './components/UI/Navbar';
 import Footer from './components/UI/Footer';
 import Modal from './components/UI/Modal';
 import HomePage from './pages/HomePage';
@@ -12,6 +11,7 @@ import CreationPage from './pages/CreationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './Shared/ProtectedRoute';
+import Navbar from './components/UI/NavBar';
 
 function App() {
   const { isAuthenticated } = useAuth();
