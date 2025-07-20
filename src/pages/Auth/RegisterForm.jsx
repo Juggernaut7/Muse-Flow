@@ -31,9 +31,9 @@ const RegisterForm = ({ onNavigate, setModalMessage }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white p-6 sm:p-8 rounded-xl shadow-xl max-w-md mx-auto mt-6 sm:mt-8 md:mt-10 w-full"
+      className="bg-white p-8 rounded-xl shadow-xl max-w-md mx-auto mt-10"
     >
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">Register for {APP_NAME}</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Register for {APP_NAME}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Username"
@@ -43,9 +43,7 @@ const RegisterForm = ({ onNavigate, setModalMessage }) => {
           required
         />
         <Input
-          label :
-
-"Password"
+          label="Password"
           id="reg-password"
           type="password"
           value={password}
@@ -64,7 +62,7 @@ const RegisterForm = ({ onNavigate, setModalMessage }) => {
           Register
         </Button>
       </form>
-      <p className="mt-4 sm:mt-6 text-center text-gray-600 text-sm sm:text-base">
+      <p className="mt-6 text-center text-gray-600">
         Already have an account?{' '}
         <button onClick={() => onNavigate('login')} className="text-indigo-600 hover:underline font-semibold">
           Login here

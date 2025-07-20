@@ -1,25 +1,63 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Howl } from 'howler';
+// import { Howl } from 'howler'; // No longer needed for metronome click
+import * as Tone from 'tone'; // Import Tone.js
 import { FaPlay, FaPause, FaRedo } from 'react-icons/fa';
-import Input from '../components/UI/Input';
+// Assuming these are correctly imported from your components/UI folder
 import Button from '../components/UI/Button';
+import Input from '../components/UI/Input';
 
 const Metronome = () => {
   const [bpm, setBpm] = useState(120);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [clickSound] = useState(new Howl({ src: ['https://s3-us-west-2.amazonaws.com/s.cdpn.io/241790/click.mp3'] }));
-  const intervalRef = React.useRef(null);
+  const intervalRef = useRef(null);
+  const synthRef = useRef(null); // Ref for Tone.js synth
+
+  // Initialize Tone.js synth once
+  useEffect(() => {
+    // Tone.start() ensures audio context is running, called in musicUtils.js
+    synthRef.current = new Tone.MembraneSynth({
+      pitchDecay: 0.008,
+      octaves: 2,
+      envelope: {
+        attack: 0.0006,
+        decay: 0.5,
+        sustain: 0,
+        release: 0.8,
+      },
+    }).toDestination();
+
+    return () => {
+      // Dispose of the synth when the component unmounts
+      if (synthRef.current) {
+        synthRef.current.dispose();
+      }
+    };
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  const playClickSound = useCallback(() => {
+    if (synthRef.current) {
+      synthRef.current.triggerAttackRelease("C2", "16n"); // Play a short, low note for a click
+    }
+  }, []);
 
   const startMetronome = useCallback(() => {
     if (isPlaying) return;
     setIsPlaying(true);
+    // Clear any existing interval to prevent multiple intervals
     if (intervalRef.current) clearInterval(intervalRef.current);
 
-    intervalRef.current = setInterval(() => {
-      clickSound.play();
-    }, (60 / bpm) * 1000);
-  }, [bpm, isPlaying, clickSound]);
+    // Ensure Tone.js audio context is started (important for mobile browsers)
+    Tone.start().then(() => {
+      playClickSound(); // Play first click immediately
+      intervalRef.current = setInterval(() => {
+        playClickSound();
+      }, (60 / bpm) * 1000); // Calculate interval in milliseconds
+    }).catch(error => {
+      console.error("Failed to start Tone.js audio context:", error);
+      // Optionally, show a modal message to the user about audio issues
+    });
+  }, [bpm, isPlaying, playClickSound]);
 
   const stopMetronome = useCallback(() => {
     setIsPlaying(false);
@@ -30,16 +68,17 @@ const Metronome = () => {
   }, []);
 
   useEffect(() => {
+    // If BPM changes while playing, restart metronome with new BPM
     if (isPlaying) {
       stopMetronome();
       startMetronome();
     }
-    return () => stopMetronome();
+    return () => stopMetronome(); // Cleanup on unmount
   }, [bpm, isPlaying, startMetronome, stopMetronome]);
 
   const handleBpmChange = (e) => {
     const newBpm = parseInt(e.target.value, 10);
-    if (!isNaN(newBpm) && newBpm >= 40 && newBpm <= 240) {
+    if (!isNaN(newBpm) && newBpm >= 40 && newBpm <= 240) { // Reasonable BPM range
       setBpm(newBpm);
     }
   };
